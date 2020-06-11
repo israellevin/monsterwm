@@ -102,6 +102,7 @@ static void spawn(const Arg *arg);
 static void swap_master();
 static void switch_mode(const Arg *arg);
 static void togglepanel();
+static void alltome();
 
 #include "config.h"
 
@@ -1343,6 +1344,30 @@ int main(int argc, char *argv[]) {
     cleanup();
     XCloseDisplay(dis);
     return retval;
+}
+
+void alltome(){
+    Client *c = NULL;
+    int omidx = currmonidx;
+    int odidx = (&monitors[currmonidx])->currdeskidx;
+    int ccnt;
+
+    for(int midx = 0; midx < nmonitors; midx++){
+        for(int didx = 0; didx < DESKTOPS; didx++, ccnt = 0) {
+            for(c = (&monitors[midx])->desktops[didx].head; c; ++ccnt, c = c->next);
+            if(ccnt == 0 || (midx == omidx && didx == odidx)) continue;
+            change_monitor(&(Arg){.i = midx});
+            change_desktop(&(Arg){.i = didx});
+            for(int i = 0; i < ccnt; i++){
+                client_to_monitor(&(Arg){.i = omidx});
+                client_to_desktop(&(Arg){.i = odidx});
+            }
+        }
+    }
+
+    change_monitor(&(Arg){.i = omidx});
+    change_desktop(&(Arg){.i = odidx});
+    switch_mode(&(Arg){.i = GRID});
 }
 
 /* vim: set expandtab ts=4 sts=4 sw=4 : */
